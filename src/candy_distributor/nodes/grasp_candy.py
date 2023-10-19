@@ -78,24 +78,27 @@ class GraspCandy(hm.HelloNode):
     #rospy.loginfo('Sent list of goals = {0}'.format(trajectory_goal))
     self.trajectory_client.wait_for_result()
 
-  def main(self):
+  def pick_and_place_candy(self):
     """
     Function that initiates the multipoint_command function.
     :param self: The self reference.
+
+    This will execute a single pick and place operation.
     """
     hm.HelloNode.main(self, 'multipoint_command', 'multipoint_command', wait_for_first_pointcloud=False)
-    for i in range(10):
-      rospy.loginfo('issuing grasp candy command...')
-      self.grasp_candy_command()
-      time.sleep(3)
-      rospy.loginfo('issuing release candy command...')
-      self.reach_candy_delivery_pose()
-      time.sleep(2)
+    rospy.loginfo('issuing grasp candy command...')
+    self.grasp_candy_command()
+    time.sleep(3)
+    rospy.loginfo('issuing release candy command...')
+    self.reach_candy_delivery_pose()
+    time.sleep(2)
 
 
-if __name__ == '__main__':
-  try:
-    node = GraspCandy()
-    node.main()
-  except KeyboardInterrupt:
-    rospy.loginfo('interrupt received, so shutting down')
+
+# Comment this out if you want to test this node by its own.
+# if __name__ == '__main__':
+#   try:
+#     node = GraspCandy()
+#     node.main()
+#   except KeyboardInterrupt:
+#     rospy.loginfo('interrupt received, so shutting down')
