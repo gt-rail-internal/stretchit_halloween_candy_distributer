@@ -8,12 +8,12 @@ The action is hardcoded and the starting and end postion is static for now.
 
 ### How to run it ?
 - Build the workspace
-`cd stretchit_halloween_candy_distributer`
-`catkin_make`
+    - `cd stretchit_halloween_candy_distributer`
+    - `catkin_make`
 - Run the Nodes
-`stretch_robot_home.py`
-`roslaunch stretch_core stretch_driver.launch`
-`roslaunch candy_distributor candy_distributor.launch`
+    - `stretch_robot_home.py`
+    - `roslaunch stretch_core stretch_driver.launch`
+    - `roslaunch candy_distributor candy_distributor.launch`
 
 ### Features
 - Continuous mode - Distributes the candies continuously.
