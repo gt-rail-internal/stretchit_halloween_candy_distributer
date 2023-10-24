@@ -13,26 +13,26 @@ import rospy
 
 print_stretch_re_use()
 
-parser = argparse.ArgumentParser(description=
-                                 'Jog the robot from an XBox Controller  \n' +
-                                 '-------------------------------------\n' +
-                                 'Left Stick X:\t Rotate base \n' +
-                                 'Left Stick Y:\t Translate base \n' +
-                                 'Right Trigger:\t Fast base motion \n' +
-                                 'Right Stick X:\t Translate arm \n' +
-                                 'Right Stick Y:\t Translate lift \n' +
-                                 'Left Button:\t Rotate wrist CCW \n' +
-                                 'Right Button:\t Rotate wrist CW \n' +
-                                 'A/B Buttons:\t Close/Open gripper \n' +
-                                 'Left/Right Pad:\t Head Pan \n' +
-                                 'Top/Bottom Pad:\t Head tilt \n' +
-                                 'Y Button :\t Go to stow position \n ' +
-                                 'Start Button:\t Home robot \n ' +
-                                 'Back Button (2 sec):\t Shutdown computer \n ' +
-                                 '-------------------------------------\n',
-                                 formatter_class=argparse.RawTextHelpFormatter)
+# parser = argparse.ArgumentParser(description=
+#  'Jog the robot from an XBox Controller  \n' +
+#  '-------------------------------------\n' +
+#  'Left Stick X:\t Rotate base \n' +
+#  'Left Stick Y:\t Translate base \n' +
+#  'Right Trigger:\t Fast base motion \n' +
+#  'Right Stick X:\t Translate arm \n' +
+#  'Right Stick Y:\t Translate lift \n' +
+#  'Left Button:\t Rotate wrist CCW \n' +
+#  'Right Button:\t Rotate wrist CW \n' +
+#  'A/B Buttons:\t Close/Open gripper \n' +
+#  'Left/Right Pad:\t Head Pan \n' +
+#  'Top/Bottom Pad:\t Head tilt \n' +
+#  'Y Button :\t Go to stow position \n ' +
+#  'Start Button:\t Home robot \n ' +
+#  'Back Button (2 sec):\t Shutdown computer \n ' +
+#  '-------------------------------------\n',
+#  formatter_class=argparse.RawTextHelpFormatter)
 
-args = parser.parse_args()
+#args = parser.parse_args()
 
 def convert_to_joystick_ros_msg(controller_state): # Credits to: ChatGPT
     # Create a new instance of the ControllerState ROS message
@@ -113,10 +113,10 @@ def main():
     xbox_controller = xc.XboxController()
     xbox_controller.start()
     check_usb_devices(wait_timeout=5)
-    rospy.init_node('joystick_input', anonymous=True)
-    joystick_pub = rospy.Publisher('joystick_state', joystick, queue_size=10)
+    rospy.init_node('joystick_input')
+    joystick_pub = rospy.Publisher('joystick_state', joystick, queue_size=0)
     # robot = rb.Robot()
-    rate = rospy.Rate(60)
+    rate = rospy.Rate(10)
     try:
         while not rospy.is_shutdown():
             controller_state = xbox_controller.get_state()
