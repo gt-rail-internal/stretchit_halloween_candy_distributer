@@ -31,5 +31,12 @@ The action is hardcoded and the starting and end postion is static for now.
     - `playsound`
 - other
     - [stretch_ros workspace](https://github.com/hello-robot/stretch_ros)
+    - [robot-upstart](http://docs.ros.org/en/jade/api/robot_upstart/html/)
+
+### StartUp
+- add the launch file to startup
+    - `rosrun robot_upstart install candy_distributor/launch/candy_distributor.launch`
+- to stop the process after autostart (for whatever reason)
+    - `sudo systemctl stop candy`
 
 
