@@ -31,15 +31,17 @@ class GraspCandy(hm.HelloNode):
 
   def reach_candy_delivery_pose(self):
     # Initialize the positions we want to reach to grasp candy
-    lift_arm_grasp = [-0.12637118506165643, 0.9158684077447159, 0.3, 0.1674595693441825, -1.8338199879850292, 0.0]
+    lift_arm_grasp = [-0.12637118506165643, 0.9158684077447159, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
     reach_delivery = [-0.12637118506165643, 0.9158650563985633, 0.5, 0.1674595693441825, -1.8338199879850292, 0.0]
     release_grasp = [0.20268437786715443,  0.9158650563985633, 0.5, 0.1674595693441825, -1.8338199879850292, 0.0]
+    return_to_pregrasp = [0.20268437786715443, 0.9285284092581446, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
 
     # Creation of the trajectory point data structure
     trajectory_points = [
         self.create_trajectory_point(lift_arm_grasp),
         self.create_trajectory_point(reach_delivery),
-        self.create_trajectory_point(release_grasp)
+        self.create_trajectory_point(release_grasp),
+        self.create_trajectory_point(return_to_pregrasp)
     ]
 
     trajectory_goal = FollowJointTrajectoryGoal()
@@ -58,10 +60,9 @@ class GraspCandy(hm.HelloNode):
   def grasp_candy_command(self):
 
     # Initialize the positions we want to reach to grasp candy
-    reach_pre_grasp = [0.20268437786715443, 0.9285284092581446, 0.25, 0.1674595693441825, -1.8338199879850292, 0.0]
-    #lower_arm_pre_grasp = [0.20268437786715443, 0.7513784372841598, 0.3, 0.1674595693441825, -1.8338199879850292, 0.0]
-    lower_arm_pre_grasp = [0.20268437786715443, 0.80, 0.3, 0.1674595693441825, -1.8338199879850292, 0.0]
-    grasp_candy= [-0.12637118506165643, 0.751385067121114, 0.3, 0.16682041068256348, -1.8338199879850292, 0.0]
+    reach_pre_grasp = [0.20268437786715443, 0.9285284092581446, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
+    lower_arm_pre_grasp = [0.20268437786715443, 0.80, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
+    grasp_candy= [-0.12637118506165643, 0.751385067121114, 0.1, 0.16682041068256348, -1.8338199879850292, 0.0]
 
     # Creation of the trajectory point data structure
     trajectory_points = [
