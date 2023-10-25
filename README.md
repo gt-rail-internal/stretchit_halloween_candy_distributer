@@ -39,4 +39,22 @@ The action is hardcoded and the starting and end postion is static for now.
 - to stop the process after autostart (for whatever reason)
     - `sudo systemctl stop candy`
 
+# Aruco Candy distributor
+## setup
+(aruco tag)
+## Running
+1. Launch each of the following in seperate terminals
+```
+roslaunch stretch_core stretch_driver.launch
+roslaunch stretch_core d435i_high_resolution.launch
+roslaunch stretch_core stretch_aruco.launch  
+```
+2. source the halloween_ws and run the aruco_candy node
+```
+cd stretchit_halloween_candy_distributer
+source devel/setup.bash
+rosrun candy_distributor aruco_candy.py 
+```
+Usage
+send a service request to candy_pick_service. input to the service is a int corresponding to the candy the person wants. 1,2 or 3.
 
