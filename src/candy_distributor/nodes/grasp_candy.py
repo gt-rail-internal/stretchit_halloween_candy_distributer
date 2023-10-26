@@ -7,6 +7,8 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 import hello_helpers.hello_misc as hm
 from xbox_ros.msg import joystick
 from std_msgs.msg import String
+from datetime import datetime, timedelta
+import threading
 
 class GraspCandy(hm.HelloNode):
   def __init__(self):
@@ -23,6 +25,7 @@ class GraspCandy(hm.HelloNode):
     ]
     self.give_candy_loop = False
     self.give_candy_once = False
+    self.last_chirp_at = datetime.now()
 
   def create_trajectory_point(self, positions):
     point = JointTrajectoryPoint()
@@ -31,22 +34,32 @@ class GraspCandy(hm.HelloNode):
 
   def reach_candy_delivery_pose(self):
     # Initialize the positions we want to reach to grasp candy
-    lift_arm_grasp = [-0.12637118506165643, 0.9158684077447159, 0.3, 0.1674595693441825, -1.8338199879850292, 0.0]
+    lift_arm_grasp = [-0.12637118506165643, 0.9158684077447159, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
     reach_delivery = [-0.12637118506165643, 0.9158650563985633, 0.5, 0.1674595693441825, -1.8338199879850292, 0.0]
     release_grasp = [0.20268437786715443,  0.9158650563985633, 0.5, 0.1674595693441825, -1.8338199879850292, 0.0]
+    return_to_pregrasp = [0.20268437786715443, 0.9285284092581446, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
 
     # Creation of the trajectory point data structure
-    trajectory_points = [
+    reach_trajectory_points = [
         self.create_trajectory_point(lift_arm_grasp),
         self.create_trajectory_point(reach_delivery),
-        self.create_trajectory_point(release_grasp)
+        
+    ]
+
+    
+
+    release_trajectory_points = [
+      self.create_trajectory_point(release_grasp),
+      self.create_trajectory_point(return_to_pregrasp)
     ]
 
     trajectory_goal = FollowJointTrajectoryGoal()
     trajectory_goal.trajectory.joint_names = self.joint_names
 
-    for point in trajectory_points:
+    for point in reach_trajectory_points:
         trajectory_goal.trajectory.points.append(point)
+   
+    
 
     trajectory_goal.trajectory.header.stamp = rospy.Time(0.0)
     trajectory_goal.trajectory.header.frame_id = 'base_link'
@@ -55,13 +68,26 @@ class GraspCandy(hm.HelloNode):
     #rospy.loginfo('Sent list of goals = {0}'.format(trajectory_goal))
     self.trajectory_client.wait_for_result()
 
+    t = threading.Thread(name='child procs', target=self.beep)
+    t.start()
+
+    trajectory_goal = FollowJointTrajectoryGoal()
+    trajectory_goal.trajectory.joint_names = self.joint_names
+    trajectory_goal.trajectory.header.stamp = rospy.Time(0.0)
+    trajectory_goal.trajectory.header.frame_id = 'base_link'
+    for point in release_trajectory_points:
+        trajectory_goal.trajectory.points.append(point)
+    
+    self.trajectory_client.send_goal(trajectory_goal)
+    #rospy.loginfo('Sent list of goals = {0}'.format(trajectory_goal))
+    self.trajectory_client.wait_for_result()
+
   def grasp_candy_command(self):
 
     # Initialize the positions we want to reach to grasp candy
-    reach_pre_grasp = [0.20268437786715443, 0.9285284092581446, 0.25, 0.1674595693441825, -1.8338199879850292, 0.0]
-    #lower_arm_pre_grasp = [0.20268437786715443, 0.7513784372841598, 0.3, 0.1674595693441825, -1.8338199879850292, 0.0]
-    lower_arm_pre_grasp = [0.20268437786715443, 0.80, 0.3, 0.1674595693441825, -1.8338199879850292, 0.0]
-    grasp_candy= [-0.12637118506165643, 0.751385067121114, 0.3, 0.16682041068256348, -1.8338199879850292, 0.0]
+    reach_pre_grasp = [0.20268437786715443, 0.9285284092581446, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
+    lower_arm_pre_grasp = [0.20268437786715443, 0.425, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
+    grasp_candy= [-0.12637118506165643, 0.425, 0.1, 0.16682041068256348, -1.8338199879850292, 0.0]
 
     # Creation of the trajectory point data structure
     trajectory_points = [
@@ -112,11 +138,18 @@ class GraspCandy(hm.HelloNode):
     if(B):
       self.give_candy_loop = not self.give_candy_loop
       time.sleep(0.5)
+
+  def chirp(self):
+    if(datetime.now() - self.last_chirp_at>= timedelta(seconds=16)):
+      self.last_chirp_at = datetime.now()
+      sound_pub.publish('vader')
+  
+  def beep(self):
+    sound_pub.publish('beep')
+
       
 
-
     
-
 
 if __name__ == '__main__':
   try:
@@ -131,6 +164,9 @@ if __name__ == '__main__':
         sound_pub.publish('outro')
         time.sleep(8)
         node.give_candy_once = False
+      # Randomly rotate camera and say random sayings
+      else:
+        node.chirp()
       rate.sleep()
   
   except KeyboardInterrupt:
