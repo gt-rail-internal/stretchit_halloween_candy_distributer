@@ -12,7 +12,6 @@ The action is hardcoded and the starting and end postion is static for now.
     - `catkin_make`
 - Run the Nodes
     - `stretch_robot_home.py`
-    - `roslaunch stretch_core stretch_driver.launch`
     - `roslaunch candy_distributor candy_distributor.launch`
 
 ### Features
