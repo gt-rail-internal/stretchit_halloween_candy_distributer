@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true" />
+    <node pkg="candy_distributor" name="grasp_candy_no_table" type="grasp_candy_no_table.py" />
+    <node pkg="xbox_ros" name="joystick_state_publisher" type="joystick_state_publisher.py"/>
+    <node pkg="halloween_sounds" name="halloween_sounds" type="halloween_sounds.py"/>
+</launch>
