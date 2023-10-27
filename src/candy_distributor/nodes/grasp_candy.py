@@ -9,6 +9,7 @@ from xbox_ros.msg import joystick
 from std_msgs.msg import String
 from datetime import datetime, timedelta
 import threading
+import random
 
 class GraspCandy(hm.HelloNode):
   def __init__(self):
@@ -25,7 +26,9 @@ class GraspCandy(hm.HelloNode):
     ]
     self.give_candy_loop = False
     self.give_candy_once = False
-    self.last_chirp_at = datetime.now()
+    self.last_chirp_at = None
+    self.last_looked_around_at = None
+    self.elevation_factor = 0
 
   def create_trajectory_point(self, positions):
     point = JointTrajectoryPoint()
@@ -86,8 +89,8 @@ class GraspCandy(hm.HelloNode):
 
     # Initialize the positions we want to reach to grasp candy
     reach_pre_grasp = [0.20268437786715443, 0.9285284092581446, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
-    lower_arm_pre_grasp = [0.20268437786715443, 0.425, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
-    grasp_candy= [-0.12637118506165643, 0.425, 0.1, 0.16682041068256348, -1.8338199879850292, 0.0]
+    lower_arm_pre_grasp = [0.20268437786715443, 0.425+self.elevation_factor, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
+    grasp_candy= [-0.12637118506165643, 0.425+self.elevation_factor, 0.1, 0.16682041068256348, -1.8338199879850292, 0.0]
 
     # Creation of the trajectory point data structure
     trajectory_points = [
@@ -119,9 +122,9 @@ class GraspCandy(hm.HelloNode):
     
     rospy.loginfo('issuing grasp candy command...')
     
-    time.sleep(3)
+    time.sleep(2)
     self.grasp_candy_command()
-    time.sleep(3)
+    time.sleep(2)
     rospy.loginfo('issuing release candy command...')
     self.reach_candy_delivery_pose()
     time.sleep(2)
@@ -130,22 +133,92 @@ class GraspCandy(hm.HelloNode):
   def callback(self, data):
     B = data.right_button_pressed
     A = data.bottom_button_pressed
-    
-    print(A)
+    D = data.bottom_pad_pressed
+    U = data.top_pad_pressed
+    print(data)
     if(A):
       self.give_candy_once = True
 
     if(B):
       self.give_candy_loop = not self.give_candy_loop
       time.sleep(0.5)
+    
+    if(U):
+      self.elevation_factor += 0.01
+    
+    if(D):
+      self.elevation_factor -= 0.01
 
   def chirp(self):
-    if(datetime.now() - self.last_chirp_at>= timedelta(seconds=16)):
+    if(self.last_chirp_at == None or datetime.now() - self.last_chirp_at>= timedelta(seconds=12)):
       self.last_chirp_at = datetime.now()
       sound_pub.publish('vader')
   
   def beep(self):
     sound_pub.publish('beep')
+
+  def wrap_pan(self,pan):
+    return max(min(pan,1.5),-4.0)
+  def wrap_tilt(self,tilt):
+    return max(min(tilt,0.4),-1.0)
+  
+  def camera_scan_non_blocking(self):
+    # creating an array of pan values from -1.5 to 1.5 with random increments in between 0.1 to 1.5
+    if(self.last_looked_around_at!= None and datetime.now() - self.last_looked_around_at< timedelta(seconds=6)):
+      return
+    self.last_looked_around_at = datetime.now()
+    scan_min = -1.0
+    scan_max = 1
+    head_tilt = -0.2
+    head_pan = -1.5
+    pan_rand_weight = 0.01
+    pan_rand_const = 0.005
+    tilt_rand_weight = 2.0
+    pan_rand_buffer_size = 10
+    tilt_rand_buffer_size = 30
+    head_pan_array = [head_pan+scan_min]
+    random_queue = []
+    for i in range(pan_rand_buffer_size):
+      random_queue.append(random.random())
+    for i in range(500):
+      rand_no = random.random()
+      random_queue.pop()
+      random_queue.append(rand_no)
+      rand = sum(random_queue)/len(random_queue)
+      rand=rand*pan_rand_weight+pan_rand_const
+      head_pan_array.append(head_pan_array[-1]+rand)
+      if(head_pan_array[-1]>head_pan+scan_max):
+        break
+    for i in range(500):
+      rand_no = random.random()
+      random_queue.pop()
+      random_queue.append(rand_no)
+      rand = sum(random_queue)/len(random_queue)
+      rand=rand*pan_rand_weight+pan_rand_const
+      head_pan_array.append(head_pan_array[-1]-rand)
+      if(head_pan_array[-1]<head_pan+scan_min):
+        break
+    trajectory_goal = FollowJointTrajectoryGoal()
+    trajectory_goal.trajectory.joint_names = ['joint_head_pan','joint_head_tilt']
+    trajectory_goal.trajectory.header.stamp = rospy.Time(0.0)
+    trajectory_goal.trajectory.header.frame_id = 'base_link'
+    random_queue = []
+    for i in range(tilt_rand_buffer_size):
+      random_queue.append(random.random()-0.5)
+    print('head_array_length:',len(head_pan_array))
+    for pan in head_pan_array:
+      random_no = random.random()-0.5
+      random_queue.pop()
+      random_queue.append(random_no)
+      random_tilt = sum(random_queue)/len(random_queue)
+      random_tilt = random_tilt*tilt_rand_weight
+      trajectory_goal.trajectory.points.append(self.create_trajectory_point([self.wrap_pan(pan),self.wrap_tilt(head_tilt-random_tilt)]))
+    # trajectory_goal.trajectory.points.append(self.create_trajectory_point([self.wrap_pan(head_pan),self.wrap_tilt(head_tilt)]))
+    
+    # trajectory_goal.trajectory.points.append(self.create_trajectory_point(camera_left_pose))
+    # trajectory_goal.trajectory.points.append(self.create_trajectory_point(camera_right_pose))
+    self.trajectory_client.send_goal(trajectory_goal)
+    return trajectory_goal
 
       
 
@@ -166,7 +239,12 @@ if __name__ == '__main__':
         node.give_candy_once = False
       # Randomly rotate camera and say random sayings
       else:
+
         node.chirp()
+        node.camera_scan_non_blocking()
+        # t = threading.Thread(name='child procs', target=node.camera_scan_non_blocking())
+        # t.start()
+        
       rate.sleep()
   
   except KeyboardInterrupt:
