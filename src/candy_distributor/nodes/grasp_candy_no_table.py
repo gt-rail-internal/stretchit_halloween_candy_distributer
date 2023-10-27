@@ -37,10 +37,10 @@ class GraspCandy(hm.HelloNode):
   
   def reach_candy_delivery_pose(self):
     # Initialize the positions we want to reach to grasp candy
-    lift_arm_grasp = [-0.12637118506165643, 0.9158684077447159, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
-    reach_delivery = [-0.12637118506165643, 0.9158650563985633, 0.5, 0.1674595693441825, -1.8338199879850292, 0.0]
-    release_grasp = [0.20268437786715443,  0.9158650563985633, 0.5, 0.1674595693441825, -1.8338199879850292, 0.0]
-    return_to_pregrasp = [0.20268437786715443, 0.9285284092581446, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
+    lift_arm_grasp = [-0.12637118506165643, 0.8705166073539916, 0.0999928970260517, 3.779345166153249, -1.8338199879850292, 0.0]
+    reach_delivery = [-0.12637118506165643, 0.8705166073539916, 0.33989182966440784, -0.01086569724752329, -1.8338199879850292, 0.0]
+    release_grasp = [0.20268437786715443,  0.8705166073539916, 0.33989182966440784, -0.01086569724752329, -1.8338199879850292, 0.0]
+    return_to_pregrasp = [0.20268437786715443, 0.8705166073539916, 0.33989182966440784, -0.01086569724752329, -1.8338199879850292, 0.0]
 
     # Creation of the trajectory point data structure
     reach_trajectory_points = [
@@ -103,11 +103,22 @@ class GraspCandy(hm.HelloNode):
     self.trajectory_client.wait_for_result()
 
   def grasp_candy_command(self):
+    '''
+    self.joint_names = [
+        'joint_gripper_finger_left',  # Gripper only has 1DOF therefore we only choose one of the following options: 'joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture'
+        'joint_lift',
+        'wrist_extension',
+        'joint_wrist_yaw',
+        'joint_head_pan',
+        'joint_head_tilt'
+    ]
+    '''
 
     # Initialize the positions we want to reach to grasp candy
-    reach_pre_grasp = [0.20268437786715443, 0.9285284092581446, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
-    lower_arm_pre_grasp = [0.20268437786715443, 0.425+self.elevation_factor, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
-    grasp_candy= [-0.12637118506165643, 0.425+self.elevation_factor, 0.1, 0.16682041068256348, -1.8338199879850292, 0.0]
+    #
+    reach_pre_grasp = [0.20268437786715443, 0.8705166073539916, 0.1, 0.1674595693441825, -1.8338199879850292, 0.0]
+    lower_arm_pre_grasp = [0.20268437786715443, 0.2164+self.elevation_factor, 0.0999928970260517, 3.779345166153249, -1.8338199879850292, 0.0]
+    grasp_candy= [-0.12637118506165643, 0.2164+self.elevation_factor, 0.0999928970260517, 3.779345166153249, -1.8338199879850292, 0.0]
 
     # Creation of the trajectory point data structure
     trajectory_points = [
