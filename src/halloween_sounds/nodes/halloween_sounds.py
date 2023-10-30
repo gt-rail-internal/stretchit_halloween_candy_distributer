@@ -15,6 +15,8 @@ def callback(data):
         outro()
     elif state == 'vader':
         darthvader()
+    elif state == 'minion':
+        minions()    
     elif state == "beep":
         beep()
 
@@ -61,6 +63,14 @@ def darthvader():
 
     #tts = gTTS(text=msg, lang='en')
     #tts.save(path)
+def minions():
+    #  Random minions sayings
+    minion = ['minion_1.mp3', 'minion_2.mp3','minion_3.mp3','minion_4.mp3','minion_5.mp3','minion_6.mp3','minion_7.mp3','minion_8.mp3']
+    #  randomly pick audio to play
+    msg = random.choice(minion)
+    path = '/home/hello-robot/stretchit_halloween_candy_distributer/src/halloween_sounds/nodes/sounds_dir/' + msg
+    rospy.loginfo('Playing minion...')
+    playsound.playsound(path, True)
 
 def beep():
     path = '/home/hello-robot/stretchit_halloween_candy_distributer/src/halloween_sounds/nodes/sounds_dir/beep.mp3'
